@@ -1,4 +1,6 @@
-use cosmwasm_std::{entry_point, Binary, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{entry_point, Binary, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[entry_point]
 pub fn instantiate(
@@ -27,9 +29,7 @@ pub fn try_register_identity(
     info: MessageInfo,
     proof: String,
 ) -> StdResult<Response> {
-
-    // storage of user and proof introduction
-
+    // Store proof and user info
     Ok(Response::new().add_attribute("method", "register_identity"))
 }
 
@@ -38,5 +38,10 @@ pub struct InstantiateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ExecuteMsg {
-    pub RegisterIdentity: { proof: String },
+    pub RegisterIdentity: RegisterIdentityMsg,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct RegisterIdentityMsg {
+    pub proof: String,
 }
