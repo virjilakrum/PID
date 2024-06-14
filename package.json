@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "snarky": "^0.1.0",
+    "snarkyjs": "^0.12.1"
+  }
+}
