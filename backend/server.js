@@ -1,16 +1,38 @@
 const express = require("express");
-const app = express();
 const bodyParser = require("body-parser");
+const axios = require("axios");
+
+const app = express();
 const port = 3000;
 
 app.use(bodyParser.json());
 
-app.post("/submit-proof", (req, res) => {
-  const { proof, name, idNumber } = req.body;
+app.post("/submit-proof", async (req, res) => {
+  const { proof } = req.body;
 
-  // .. handle proof submission ..
+  // transaction actual details
+  const tx = {
+    msgs: [
+      {
+        type: "wasm/MsgExecuteContract",
+        value: {
+          sender: "<your_wallet_address>",
+          contract: "<contract_address>",
+          msg: { register_identity: { proof } },
+          funds: [],
+        },
+      },
+    ],
+    fee: { amount: [{ denom: "ucosm", amount: "5000" }], gas: "200000" },
+    memo: "",
+  };
 
-  res.send("Proof submitted successfully!");
+  try {
+    const response = await axios.post("<node_url>/txs", tx);
+    res.status(200).send(response.data);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
 });
 
 app.listen(port, () => {
