@@ -1,43 +1,58 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const axios = require("axios");
+import React, { useState } from "react";
+import axios from "axios";
+import snarkjs from "snarkjs";
 
-const app = express();
-const port = 3000;
+const IdentityForm = () => {
+  const [name, setName] = useState("");
+  const [idNumber, setIdNumber] = useState("");
 
-app.use(bodyParser.json());
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const proof = await generateProof(name, idNumber);
 
-app.post("/submit-proof", async (req, res) => {
-  const { proof } = req.body;
-
-  // transaction actual details
-  const tx = {
-    msgs: [
-      {
-        type: "wasm/MsgExecuteContract",
-        value: {
-          sender: "<your_wallet_address>",
-          // .. add <your_wallet_address> ..
-          contract: "<contract_address>",
-          // .. add<contract_address> ..
-          msg: { register_identity: { proof } },
-          funds: [],
-        },
-      },
-    ],
-    fee: { amount: [{ denom: "ucosm", amount: "5000" }], gas: "200000" },
-    memo: "",
+    try {
+      const response = await axios.post("http://localhost:3000/submit-proof", {
+        proof,
+      });
+      console.log("Proof submitted successfully:", response.data);
+    } catch (error) {
+      console.error("Error submitting proof:", error);
+    }
   };
 
-  try {
-    const response = await axios.post("<node_url>/txs", tx);
-    // .. add <node_url> ..
-    res.status(200).send(response.data);
-  } catch (error) {
-    res.status(500).send(error.message);
-  }
-});
+  const generateProof = async (name, idNumber) => {
+    const input = { name, idNumber };
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      "identity.wasm",
+      "identity.zkey",
+    );
+    return proof;
+  };
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+  return (
+    <form onSubmit={handleSubmit}>
+      <label>
+        Name:
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </label>
+      <br />
+      <label>
+        ID Number:
+        <input
+          type="text"
+          value={idNumber}
+          onChange={(e) => setIdNumber(e.target.value)}
+        />
+      </label>
+      <br />
+      <button type="submit">Submit</button>
+    </form>
+  );
+};
+
+export default IdentityForm;

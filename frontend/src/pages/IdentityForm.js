@@ -5,14 +5,11 @@ import snarkjs from "snarkjs";
 const IdentityForm = () => {
   const [name, setName] = useState("");
   const [idNumber, setIdNumber] = useState("");
-  const [proof, setProof] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const proof = await generateProof(name, idNumber);
-    setProof(proof);
 
-    // Submit proof to backend
     try {
       const response = await axios.post("http://localhost:3000/submit-proof", {
         proof,
