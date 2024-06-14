@@ -17,7 +17,9 @@ app.post("/submit-proof", async (req, res) => {
         type: "wasm/MsgExecuteContract",
         value: {
           sender: "<your_wallet_address>",
+          // .. add <your_wallet_address> ..
           contract: "<contract_address>",
+          // .. add<contract_address> ..
           msg: { register_identity: { proof } },
           funds: [],
         },
@@ -29,6 +31,7 @@ app.post("/submit-proof", async (req, res) => {
 
   try {
     const response = await axios.post("<node_url>/txs", tx);
+    // .. add <node_url> ..
     res.status(200).send(response.data);
   } catch (error) {
     res.status(500).send(error.message);
