@@ -1,58 +1,48 @@
-import React, { useState } from "react";
-import axios from "axios";
-import snarkjs from "snarkjs";
+const express = require("express");
+const bodyParser = require("body-parser");
+const axios = require("axios");
 
-const IdentityForm = () => {
-  const [name, setName] = useState("");
-  const [idNumber, setIdNumber] = useState("");
+const app = express();
+const port = 3000;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const proof = await generateProof(name, idNumber);
+// My actual test wallet address [Baturalp]
+const walletAddress = "wasm1hqeh6htnyx3xyguy4zzewr3sya3hdacjg0s66l";
 
-    try {
-      const response = await axios.post("http://localhost:3000/submit-proof", {
-        proof,
-      });
-      console.log("Proof submitted successfully:", response.data);
-    } catch (error) {
-      console.error("Error submitting proof:", error);
-    }
+// My actual test  contract address [lib.rs -target]
+const contractAddress = "cosmos1xxlq5m6er6e0hw5pfq4uv7j2dr7xn4py5v4vv5";
+
+// My actual node URL
+const nodeUrl = "http://localhost:26657";
+
+app.use(bodyParser.json());
+
+app.post("/submit-proof", async (req, res) => {
+  const { proof } = req.body;
+
+  const tx = {
+    msgs: [
+      {
+        type: "wasm/MsgExecuteContract",
+        value: {
+          sender: walletAddress,
+          contract: contractAddress,
+          msg: { register_identity: { proof } },
+          funds: [],
+        },
+      },
+    ],
+    fee: { amount: [{ denom: "ucosm", amount: "5000" }], gas: "200000" },
+    memo: "",
   };
 
-  const generateProof = async (name, idNumber) => {
-    const input = { name, idNumber };
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
-      input,
-      "identity.wasm",
-      "identity.zkey",
-    );
-    return proof;
-  };
+  try {
+    const response = await axios.post(`${nodeUrl}/txs`, tx);
+    res.status(200).send(response.data);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        Name:
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </label>
-      <br />
-      <label>
-        ID Number:
-        <input
-          type="text"
-          value={idNumber}
-          onChange={(e) => setIdNumber(e.target.value)}
-        />
-      </label>
-      <br />
-      <button type="submit">Submit</button>
-    </form>
-  );
-};
-
-export default IdentityForm;
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
