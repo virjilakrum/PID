@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import snarkjs from "snarkjs";
 
 const IdentityForm = () => {
@@ -12,6 +13,14 @@ const IdentityForm = () => {
     setProof(proof);
 
     // Submit proof to backend
+    try {
+      const response = await axios.post("http://localhost:3000/submit-proof", {
+        proof,
+      });
+      console.log("Proof submitted successfully:", response.data);
+    } catch (error) {
+      console.error("Error submitting proof:", error);
+    }
   };
 
   const generateProof = async (name, idNumber) => {
