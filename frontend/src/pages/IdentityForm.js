@@ -1,13 +1,27 @@
 import React, { useState } from "react";
+import snarkjs from "snarkjs";
 
 const IdentityForm = () => {
   const [name, setName] = useState("");
   const [idNumber, setIdNumber] = useState("");
   const [proof, setProof] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    //.. zk proof part ..
+    const proof = await generateProof(name, idNumber);
+    setProof(proof);
+
+    // Submit proof to backend
+  };
+
+  const generateProof = async (name, idNumber) => {
+    const input = { name, idNumber };
+    const { proof, publicSignals } = await snarkjs.groth16.fullProve(
+      input,
+      "identity.wasm",
+      "identity.zkey",
+    );
+    return proof;
   };
 
   return (
@@ -27,15 +41,6 @@ const IdentityForm = () => {
           type="text"
           value={idNumber}
           onChange={(e) => setIdNumber(e.target.value)}
-        />
-      </label>
-      <br />
-      <label>
-        Proof:
-        <input
-          type="text"
-          value={proof}
-          onChange={(e) => setProof(e.target.value)}
         />
       </label>
       <br />
