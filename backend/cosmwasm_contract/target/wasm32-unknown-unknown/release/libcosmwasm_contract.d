@@ -1,0 +1,1 @@
+/Users/dante/Desktop/reacthreejs/PID/backend/cosmwasm_contract/target/wasm32-unknown-unknown/release/libcosmwasm_contract.rlib: /Users/dante/Desktop/reacthreejs/PID/backend/cosmwasm_contract/src/lib.rs
